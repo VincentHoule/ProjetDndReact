@@ -56,8 +56,8 @@ export function ListePersonnage() {
       axios.get('https://projet-dnd.netlify.app/api/personnage', { headers: { Authorization: `Bearer ${biscuit.authorization}` } }).then((response) => {
         setPersonnages(response.data.perso)
         setEnChargement(false);
-      }).catch((e) => {
-        console.log(e)
+      }).catch(() => {
+
       });
     }, 1000)
 

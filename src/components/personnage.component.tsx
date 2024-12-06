@@ -13,7 +13,7 @@ interface IFiche {
 
 
 export default function Personnage(props: IFiche) {
-    const [biscuit, _, removeBiscuit] = useCookies(['authorization'])
+    const [biscuit, _] = useCookies(['authorization'])
     const [afficheConfirme, setAfficheConfirme] = useState(false)
 
     /**
