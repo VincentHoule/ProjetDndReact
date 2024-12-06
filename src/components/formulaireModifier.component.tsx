@@ -1,12 +1,17 @@
 import { useEffect, useState, useContext } from "react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
-import { VerifNom, BaliseErreur, VerifClasse, VerifRace, VerifNiveau, VerifPv, VerifArme, VerifStats } from "./MessageVerification.component";
+import { VerifNom, BaliseErreur, VerifClasse, VerifRace, VerifNiveau, VerifPv, VerifArme, VerifStats, VerifDate } from "./messageVerification.component";
 import { ListeContext } from "../contexts/listePersonnage.context";
-import { PopUpReussite } from "./popUp.component";
+import { PopUpEchec, PopUpReussite } from "./popUp.component";
+import { FormattedMessage, useIntl } from "react-intl";
+import { useCookies } from "react-cookie";
 
 function Modifier() {
     const { listePersonnage, setPersonnages } = useContext(ListeContext)
+    const [biscuit, _, removeBiscuit] = useCookies(['authorization'])
+
+    const intl = useIntl()
 
     const { id } = useParams();
     const [enChargement, setEnChargement] = useState(true);
@@ -53,6 +58,7 @@ function Modifier() {
     // Afficher le pop up de réussite de la requête
     const [affiche, setAffiche] = useState(false)
     const [reussite, setReussite] = useState(false)
+    const [echec, setEchec] = useState(false)
 
     // Hook des message d'erreur
     const [messageErreurNom, setMessageErreurNom] = useState("");
@@ -64,11 +70,12 @@ function Modifier() {
     const [messageErreurArme2, setMessageErreurArme2] = useState("");
     const [messageErreurArme3, setMessageErreurArme3] = useState("");
     const [messageErreurStats, setMessageErreurStats] = useState("");
+    const [messageErreurDate, setMessageErreurDate] = useState("")
 
     // Pour envoyer la liste des noms à la vérification du nom
     useEffect(() => {
         setTimeout(() => {
-            axios.get('https://projet-dnd.netlify.app/api/personnage').then((response) => {
+            axios.get('https://projet-dnd.netlify.app/api/personnage', { headers: { Authorization: `Bearer ${biscuit.authorization}` } }).then((response) => {
                 setPersonnages(response.data.perso)
 
             });
@@ -79,7 +86,7 @@ function Modifier() {
     // Remplir avec les informations du personnage
     useEffect(() => {
         setTimeout(() => {
-            axios.get(`https://projet-dnd.netlify.app/api/personnage/un/${id}`).then((response) => {
+            axios.get(`https://projet-dnd.netlify.app/api/personnage/un/${id}`, { headers: { Authorization: `Bearer ${biscuit.authorization}` } }).then((response) => {
                 setPersonnageDemo(response.data.perso)
                 setModifiePersonnage(response.data.perso)
                 setNomInitial(response.data.perso.nom)
@@ -89,20 +96,37 @@ function Modifier() {
 
     }, [])
     function ModifierPersonnage() {
+        setEchec(false)
+        setReussite(false)
+        setMessageErreurNom(TraduireMessage(VerifNom(personnageDemo.nom, listePersonnage, "")))
+        setMessageErreurClasse(TraduireMessage(VerifClasse(personnageDemo.classe)))
+        setMessageErreurRace(TraduireMessage(VerifRace(personnageDemo.race)))
+        setMessageErreurNiveau(TraduireMessage(VerifNiveau(personnageDemo.niveau)))
+        setMessageErreurPv(TraduireMessage(VerifPv(personnageDemo.pv)))
+        setMessageErreurArme1(TraduireMessage(VerifArme(personnageDemo.armes[0])))
+        setMessageErreurArme2(TraduireMessage(VerifArme(personnageDemo.armes[1])))
+        setMessageErreurArme3(TraduireMessage(VerifArme(personnageDemo.armes[2])))
+        setMessageErreurStats(TraduireMessage(VerifStats(personnageDemo.stats)))
+        setMessageErreurDate(TraduireMessage(VerifDate(personnageDemo.creation)))
+
         // Vérifier si les champs sont invalide
         if (messageErreurNom == "" && messageErreurClasse == "" && messageErreurNiveau == ""
             && messageErreurRace == "" && messageErreurPv == "" && messageErreurArme1 == ""
             && messageErreurArme2 == "" && messageErreurArme3 == "" && messageErreurStats == ""
         ) {
-            
+
             axios.put("https://projet-dnd.netlify.app/api/personnage/update", { perso: modifiePersonnage }).then(() => {
                 setAffiche(true)
                 setReussite(true)
             })
-                .catch((e) => {
-                    console.log(e)
-                    console.log(modifiePersonnage)
+                .catch(() => {
+                    setEchec(true)
+
                 })
+        }
+        else {
+            setEchec(true)
+
         }
 
 
@@ -112,21 +136,21 @@ function Modifier() {
 
         return (
             <>
-                <div onInput={() => {
+                <div onChange={() => {
 
                     if (index == 1)
-                        setMessageErreurArme1(VerifArme(modifiePersonnage.armes[index]));
+                        setMessageErreurArme1(TraduireMessage(VerifArme(modifiePersonnage.armes[index])))
                     if (index == 2)
-                        setMessageErreurArme2(VerifArme(modifiePersonnage.armes[index]));
+                        setMessageErreurArme2(TraduireMessage(VerifArme(modifiePersonnage.armes[index])))
                     if (index == 3)
-                        setMessageErreurArme3(VerifArme(modifiePersonnage.armes[index]))
+                        setMessageErreurArme3(TraduireMessage(VerifArme(modifiePersonnage.armes[index])))
 
                 }}>
-                    <label>Nom :</label>
+                    <label><FormattedMessage id="liste.nom" /> :</label>
                     <input defaultValue={modifiePersonnage.armes[index].nom} onChange={(e) => { personnageDemo.armes[index].nom = e.target.value; setModifiePersonnage(personnageDemo) }}></input>
-                    <label>De :</label>
+                    <label><FormattedMessage id="form.de" /> :</label>
                     <input defaultValue={modifiePersonnage.armes[index].de} onChange={(e) => { personnageDemo.armes[index].de = e.target.value; setModifiePersonnage(personnageDemo) }}></input>
-                    <label>Dégât :</label>
+                    <label><FormattedMessage id="form.type" /> :</label>
                     <input defaultValue={modifiePersonnage.armes[index].degat} onChange={(e) => { personnageDemo.armes[index].degat = e.target.value; setModifiePersonnage(personnageDemo) }}></input>
                     {index == 1 ? BaliseErreur(messageErreurArme1) : null}
                     {index == 2 ? BaliseErreur(messageErreurArme2) : null}
@@ -135,6 +159,21 @@ function Modifier() {
 
             </>
         );
+    }
+
+    function TraduireMessage(messageErreurs: string[]) {
+        var message = ""
+
+        if (messageErreurs.length != 0) {
+
+            (messageErreurs && messageErreurs.map((erreur) => {
+                message += intl.formatMessage({ id: erreur })
+            }))
+
+
+        }
+        return message;
+
     }
 
     if (enChargement) {
@@ -147,20 +186,35 @@ function Modifier() {
     else {
         return (
             <div className="flex flex-col h-full min-h-screen px-32 pt-16 mx-10 bg-slate-800">
-                {affiche && reussite ? PopUpReussite("Le personnage a été modifier avec success"): null}
-                <label>Nom :</label>
+
+                {/** Section Message de confirmation */}
+                {affiche && reussite ?
+                    <div onClick={() => setReussite(false)}>
+                        {PopUpReussite("Le personnage a été modifier avec success.")}
+                    </div>
+
+                    : null}
+                {affiche && echec &&
+                    <div onClick={() => setEchec(false)}>
+                        {PopUpEchec("La modification a échoué.")}
+                    </div>
+                }
+
+                {/** Section Nom */}
+                <label><FormattedMessage id="liste.nom" /></label>
                 <input defaultValue={modifiePersonnage.nom} onChange={(e) => {
                     personnageDemo.nom = e.target.value;
                     setModifiePersonnage(personnageDemo);
-                    setMessageErreurNom(VerifNom(modifiePersonnage.nom, listePersonnage, nomInitial))
+                    setMessageErreurNom(TraduireMessage(VerifNom(modifiePersonnage.nom, listePersonnage, nomInitial)))
                 }} ></input>
                 {BaliseErreur(messageErreurNom)}
 
-                <label>Classe :</label>
+                {/** Section Classe */}
+                <label><FormattedMessage id="liste.classe" /></label>
                 <select defaultValue={modifiePersonnage.classe} onChange={(e) => {
                     personnageDemo.classe = e.currentTarget.value;
                     setModifiePersonnage(personnageDemo);
-                    setMessageErreurClasse(VerifClasse(modifiePersonnage.classe));
+                    setMessageErreurClasse(TraduireMessage(VerifClasse(modifiePersonnage.classe)));
                     console.log(e.currentTarget.value)
                 }} >
                     <option value="Barbare">Barbare</option>
@@ -179,56 +233,77 @@ function Modifier() {
                 </select>
                 {BaliseErreur(messageErreurClasse)}
 
-                <label>Race :</label>
+                {/** Section Race */}
+                <label><FormattedMessage id="liste.race" /> :</label>
                 <input defaultValue={modifiePersonnage.race} onChange={(e) => {
                     personnageDemo.race = e.target.value;
                     setModifiePersonnage(personnageDemo);
-                    setMessageErreurRace(VerifRace(modifiePersonnage.race))
+                    setMessageErreurRace(TraduireMessage(VerifRace(modifiePersonnage.race)))
                 }}></input>
                 {BaliseErreur(messageErreurRace)}
 
-                <label>Niveau :</label>
+                {/** Section Niveau */}
+                <label><FormattedMessage id="liste.niveau" /> :</label>
                 <input defaultValue={modifiePersonnage.niveau} onChange={(e) => {
                     personnageDemo.niveau = parseInt(e.target.value);
                     setModifiePersonnage(personnageDemo)
-                    setMessageErreurNiveau(VerifNiveau(modifiePersonnage.niveau))
+                    setMessageErreurNiveau(TraduireMessage(VerifNiveau(modifiePersonnage.niveau)))
                 }}></input>
                 {BaliseErreur(messageErreurNiveau)}
 
-                <label>Pv :</label>
+                {/** Section Pv */}
+                <label><FormattedMessage id="form.pv" /> :</label>
                 <input defaultValue={modifiePersonnage.pv} onChange={(e) => {
                     personnageDemo.pv = parseInt(e.target.value);
                     setModifiePersonnage(personnageDemo);
-                    setMessageErreurPv(VerifPv(modifiePersonnage.pv))
+                    setMessageErreurPv(TraduireMessage(VerifPv(modifiePersonnage.pv)))
                 }}></input>
                 {BaliseErreur(messageErreurPv)}
 
+                {/** Section Armes */}
                 <div>
-                    <label>Armes :</label>
+                    <label><FormattedMessage id="form.armes" /> :</label>
                     {AjouterArme(0)}
                     {AjouterArme(1)}
                     {AjouterArme(2)}
                 </div>
 
-                <div onInputCapture={() => {
-                    setMessageErreurStats(VerifStats(modifiePersonnage.stats))
+                {/** Section Statistique */}
+                <div onChange={() => {
+                    setMessageErreurStats(TraduireMessage(VerifStats(modifiePersonnage.stats)))
                 }} className="flex flex-col">
-                    <b>Statistique :</b>
-                    <label>Force :</label>
+                    <b><FormattedMessage id="form.statistique" /> :</b>
+                    <label><FormattedMessage id="form.force" /> :</label>
                     <input defaultValue={modifiePersonnage.stats.force} onChange={(e) => { personnageDemo.stats.force = parseInt(e.target.value); setModifiePersonnage(personnageDemo) }}></input>
-                    <label>Dextérité :</label>
+                    <label><FormattedMessage id="form.dex" /> :</label>
                     <input defaultValue={modifiePersonnage.stats.dexterite} onChange={(e) => { personnageDemo.stats.dexterite = parseInt(e.target.value); setModifiePersonnage(personnageDemo) }}></input>
-                    <label>Constitution :</label>
+                    <label><FormattedMessage id="form.consti" /> :</label>
                     <input defaultValue={modifiePersonnage.stats.constitution} onChange={(e) => { personnageDemo.stats.constitution = parseInt(e.target.value); setModifiePersonnage(personnageDemo) }}></input>
-                    <label>Intelligence :</label>
+                    <label><FormattedMessage id="form.intel" /> :</label>
                     <input defaultValue={modifiePersonnage.stats.intelligence} onChange={(e) => { personnageDemo.stats.intelligence = parseInt(e.target.value); setModifiePersonnage(personnageDemo) }}></input>
-                    <label>Sagesse :</label>
+                    <label><FormattedMessage id="form.sage" /> :</label>
                     <input defaultValue={modifiePersonnage.stats.sagesse} onChange={(e) => { personnageDemo.stats.sagesse = parseInt(e.target.value); setModifiePersonnage(personnageDemo) }}></input>
-                    <label>Charisme :</label>
+                    <label><FormattedMessage id="form.charisme" /> :</label>
                     <input defaultValue={modifiePersonnage.stats.charisme} onChange={(e) => { personnageDemo.stats.charisme = parseInt(e.target.value); setModifiePersonnage(personnageDemo) }}></input>
                     {BaliseErreur(messageErreurStats)}
                 </div>
-                <button onClick={() => ModifierPersonnage()}>Modifier</button>
+
+                {/** Section Création */}
+                <label><FormattedMessage id="form.date_creation" /></label>
+                <input type="date" defaultValue={new Date().toISOString().split('T')[0]} max={new Date().toISOString().split('T')[0]} onChange={(e) => { personnageDemo.creation = new Date(e.target.value); setModifiePersonnage(personnageDemo) }}></input>
+                {BaliseErreur(messageErreurDate)}
+
+                {/** Section Mort */}
+                <div>
+                    <label><FormattedMessage id="liste.mort" /> :</label>
+                    <input type="checkbox" defaultValue={0} onChange={(e) => {
+                        personnageDemo.mort = Boolean(e.target.value);
+                        setModifiePersonnage(personnageDemo);
+                        setMessageErreurDate(TraduireMessage(VerifDate(modifiePersonnage.creation)))
+                    }}></input>
+                </div>
+
+                <button onClick={() => ModifierPersonnage()}><FormattedMessage id="liste.modifier" /></button>
             </div>
         );
     }

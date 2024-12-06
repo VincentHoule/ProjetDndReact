@@ -3,7 +3,11 @@ import { IPersonnage } from "../models/iPersonnage.model";
 
 
 
-
+/**
+ * Fonction qui affiche une baliste d'erreur sous les champs
+ * @param messageErreur le message a afficher
+ * @returns une baliste d'erreur sous les champs
+ */
 export function BaliseErreur(messageErreur: string) {
     if (messageErreur != "") {
         return (
@@ -14,113 +18,163 @@ export function BaliseErreur(messageErreur: string) {
     }
 }
 
+/**
+ * Fonction qui valide le champ nom
+ * le nom doit être unique
+ * @param nom le nom a valider
+ * @param listePersonnage la liste des personnages
+ * @param nomInitial le nom initiale
+ * @returns une liste de message d'erreur
+ */
+export function VerifNom(nom: string, listePersonnage : IPersonnage[], nomInitial : string) : string[] {
 
-export function VerifNom(nom: string, listePersonnage : IPersonnage[], nomInitial : string) {
-    var messageErreur = ""
-    if (nom.length <= 0 || nom == "") {
-        messageErreur += "Le nom doit être d'au moins 1 caractère."
+    var messageErreur: string[] = []
+    if (nom.length < 1 || nom == "") {
+        messageErreur.push("message_verif.nom_caractere")
     }
 
     {listePersonnage && listePersonnage.map((personnage) => {
             if (personnage.nom == nom && nom != nomInitial) {
-                messageErreur = `Votre nom doit être unique et ${nom} est déjà utilisé.`
+                messageErreur.push("message_verif.nom_utilise");
             }
         })
     }
-
     return messageErreur;
-
-
 }
 
+/**
+ * Fonction qui valide le champ classe
+ * @param classe la classe a validé.
+ * @returns une liste de message d'erreur
+ */
 export function VerifClasse(classe: string) {
-    var messageErreur = ""
+    var messageErreur: string[] = []
     const regex = new RegExp("^(Guerrier)|(Barde)|(Barbare)|(Ensorceleur)|(Clerc)|(Paladin)|(Occultiste)|(Roublard)|(Moine)|(Rodeur)|(Magicien)|(Artificier)|(Druide)$")
 
     if (!regex.test(classe)) {
-        messageErreur += "Votre classe n'existe pas."
+        messageErreur.push("message_verif.classe_existe")
     }
-
-
     return messageErreur;
 }
 
+/**
+ * Fonction qui valide le champ race
+ * @param race la race a validé
+ * @returns une liste de message d'erreur
+ */
 export function VerifRace(race: String) {
-    var messageErreur = ""
+    var messageErreur: string[] = []
 
-    if (race.length <= 0 || race == "") {
-        messageErreur += "La race doit être d'au moins 1 caractère."
+    if (race.length < 1 || race == "") {
+        messageErreur.push("message_verif.race_caractere")
     }
     return messageErreur;
 }
 
+/**
+ * Fonction qui valide le champ niveau
+ * @param niveau le niveau a validé
+ * @returns une liste de message d'erreur
+ */
 export function VerifNiveau(niveau: number) {
-    var messageErreur = ""
+    var messageErreur: string[] = []
 
-    if (niveau < 1 && niveau > 20) {
-        messageErreur += "Le niveau doit être entre 1 et 20."
+    if (niveau < 1 && niveau > 20 || isNaN(niveau)) {
+        messageErreur.push("message_verif.niveau_interval")
     }
 
     return messageErreur;
 }
 
+/**
+ * Fonction qui valide le champ niveau
+ * @param pv les pv a validé
+ * @returns une liste de message d'erreur
+ */
 export function VerifPv(pv: number) {
-    var messageErreur = ""
+    var messageErreur: string[] = []
 
-    if (pv < 1) {
-        messageErreur += "Votre nombre de point de vie doit être au minimum 1."
+    if (pv < 1 || isNaN(pv)) {
+        messageErreur.push("message_verif.pv_minimum")
     }
 
     return messageErreur;
 }
 
+/**
+ * Fonction qui valide les champs des armes
+ * @param arme une arme a valid.
+ * @returns une liste de message d'erreur
+ */
 export function VerifArme(arme: IArme) {
-    var messageErreur = ""
+    var messageErreur: string[] = []
     const regex = new RegExp("^[0-9]{1,}d[4,6,8,10,12]{1,}$")
     if (arme.de != "" || arme.degat != "" || arme.nom != "") {
 
-        if (arme.de.length > 20 && arme.de.length < 1) {
-            messageErreur += "Le dé de dégât de l'arme ne peut pas dépasser 20 caractère et en avoir au moins 1."
+        if (arme.de.length > 20 || arme.de.length < 1) {
+            messageErreur.push("message_verif.de_caractere")
         }
 
-        if (regex.test(arme.de)) {
-            messageErreur += "L'arme n'a pas le bon format pour les dés de dégât qui est par exemple 1d12, 1d8, 2d6, 1d4."
+        if (!regex.test(arme.de)) {
+            messageErreur.push("message_verif.de_format")
         }
 
-        if (arme.degat.length > 20 && arme.degat.length < 1) {
-            messageErreur += "Le type de dégât de l'arme ne peut pas dépasser 20 caractère et en avoir au moins 1."
+        if (arme.degat.length > 20 || arme.degat.length < 1) {
+            messageErreur.push("message_verif.degat_caractere")
         }
 
-        if (arme.nom.length > 20 && arme.nom.length < 1) {
-            messageErreur += "Le nom de l'arme ne peut pas dépasser 20 caractère et en avoir au moins 1."
+        if (arme.nom.length > 20 || arme.nom.length < 1 || arme.nom == "") {
+            messageErreur.push("message_verif.arme_nom_caractere")
         }
     }
-
 
     return messageErreur;
 }
 
+/**
+ * Fonction qui valide les champs des stats
+ * @param stats les statistiques a validé
+ * @returns une liste de message d'erreur
+ */
 export function VerifStats(stats: IStat) {
-    var messageErreur = ""
-    console.log(stats.force)
-    if (stats.force > 30 || stats.force < 1) {
-        messageErreur += "La force ne peut pas dépenser 30 ou être en-dessous de 1."
+    var messageErreur: string[] = []
+    if (stats.force > 30 || stats.force < 1 || isNaN(stats.force)) {
+        messageErreur.push("message_verif.force_interval")
     }
-    if (stats.dexterite > 30 || stats.dexterite < 1) {
-        messageErreur += "La dextérité ne peut pas dépenser 30 ou être en-dessous de 1."
+    if (stats.dexterite > 30 || stats.dexterite < 1 || isNaN(stats.dexterite)) {
+        messageErreur.push("message_verif.dex_interval")
     }
-    if (stats.constitution > 30 || stats.constitution < 1) {
-        messageErreur += "La constitution ne peut pas dépenser 30 ou être en-dessous de 1."
+    if (stats.constitution > 30 || stats.constitution < 1 || isNaN(stats.constitution)) {
+        messageErreur.push("message_verif.const_interval")
     }
-    if (stats.intelligence > 30 || stats.intelligence < 1) {
-        messageErreur += "L'intelligence ne peut pas dépenser 30 ou être en-dessous de 1."
+    if (stats.intelligence > 30 || stats.intelligence < 1 || isNaN(stats.intelligence)) {
+        messageErreur.push("message_verif.intel_interval")
     }
-    if (stats.sagesse > 30 || stats.sagesse < 1) {
-        messageErreur += "La sagesse ne peut pas dépenser 30 ou être en-dessous de 1."
+    if (stats.sagesse > 30 || stats.sagesse < 1 || isNaN(stats.sagesse)) {
+        messageErreur.push("message_verif.sage_interval")
     }
-    if (stats.charisme > 30 || stats.charisme < 1) {
-        messageErreur += "Le charisme ne peut pas dépenser 30 ou être en-dessous de 1."
+    if (stats.charisme > 30 || stats.charisme < 1 || isNaN(stats.charisme)) {
+        messageErreur.push("message_verif.charisme_interval")
     }
 
     return messageErreur;
 }
+
+/**
+ * Fonction qui valide le champs date
+ * @param date date a validé
+ * @returns une liste de message d'erreur
+ */
+export function VerifDate(date: Date)
+{
+    var messageErreur :string[] =[]
+
+    if(date > new Date())
+    {
+        messageErreur.push("message_verif.date_future")
+    }
+    return messageErreur;
+}
+
+
+

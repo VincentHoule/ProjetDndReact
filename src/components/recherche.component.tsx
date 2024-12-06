@@ -1,26 +1,36 @@
-import { useState, useContext, useEffect } from "react";
+import { useState, useContext } from "react";
 import { FormattedMessage } from "react-intl";
-import Personnage from "./personnage.component";
 import { ListeContext } from "../contexts/listePersonnage.context";
 import axios from "axios";
 import { AfficherChargement, AfficherListe } from "./listePersonnage.component";
+import { useCookies } from "react-cookie";
 
+/**
+ * Fonction de gestion de recherche
+ */
 export function Recherche() {
+    const [biscuit, _, removeBiscuit] = useCookies(['authorization'])
     const [classeChoisie, setClasseChoisie] = useState("Barbare")
     const [min, setMin] = useState(1)
     const [max, setMax] = useState(1)
     const [modeRecherche, setModeRecherche] = useState("classe")
     const [affiche, setAffiche] = useState(false)
     const [chargement, setChargement] = useState(true)
-    const {listePersonnage, setPersonnages } = useContext(ListeContext)
+    const { listePersonnage, setPersonnages } = useContext(ListeContext)
 
+    /**
+     * Gestion du type de recherche
+     * - Par classe
+     * - Par mode
+     */
     function RechercherParMode() {
         setAffiche(true)
         setChargement(true)
+
         // Rechercher par classe
         if (modeRecherche == "classe") {
             setTimeout(() => {
-                axios.get(`https://projet-dnd.netlify.app/api/personnage/classe/${classeChoisie}`).then((response) => {
+                axios.get(`https://projet-dnd.netlify.app/api/personnage/classe/${classeChoisie}`, { headers: { Authorization: `Bearer ${biscuit.authorization}` } }).then((response) => {
                     setPersonnages(response.data.perso)
                     setChargement(false)
                 })
@@ -34,6 +44,8 @@ export function Recherche() {
                         params: {
                             min: min,
                             max: max
+                        }, headers: {
+                            Authorization: `Bearer ${biscuit.authorization}`
                         }
                     }
                 ).then((response) => {
@@ -47,21 +59,24 @@ export function Recherche() {
 
     return (
         <div className="flex flex-col h-full min-h-screen px-32 pt-16 mx-10 bg-slate-800">
-            <h2>Mode de Recherche</h2>
+            <h2><FormattedMessage id="recherche.mode_recherche" /></h2>
+
+            {/** Sélection du mode de recherche */}
             <div className="flex flex-row">
                 <div className="flex flex-col">
                     <button className={`w-48 mt-2 ${modeRecherche == "classe" ? "border-blue-400" : ""}`}
                         onClick={() => {
                             setModeRecherche("classe");
                             setAffiche(false)
-                        }}>Par classe</button>
+                        }}><FormattedMessage id="recherche.mode_classe" /></button>
                     <button className={`w-48 mt-2 ${modeRecherche == "niveau" ? "border-blue-400" : ""}`}
                         onClick={() => {
                             setModeRecherche("niveau");
                             setAffiche(false)
-                        }}>Par niveau</button>
+                        }}><FormattedMessage id="recherche.mode_niveau" /></button>
                 </div>
 
+                {/** Affichage du mode de recherche */}
                 {modeRecherche == "classe" ?
                     <div className="ml-5">
                         <label><FormattedMessage id="liste.classe" /></label>
@@ -89,13 +104,15 @@ export function Recherche() {
                 }
             </div>
 
-            <button className="w-48 mt-5" onClick={() => RechercherParMode()}>Rechercher</button>
+            <button className="w-48 mt-5" onClick={() => RechercherParMode()}><FormattedMessage id="recherche.recherche" /></button>
+
+            {/** Affichage du résulatat de recherche */}
             {affiche ?
                 <div className="mt-5">
                     {chargement ? AfficherChargement() : AfficherListe(listePersonnage)}
                 </div> :
                 <div className="flex flex-col h-full min-h-screen px-32 pt-16 mx-10 bg-slate-800">
-                    <h1 className="mt-5">Selectionner un mode de recherche</h1>
+                    <h1 className="mt-5"><FormattedMessage id="recherche.selectionner_recherche" /></h1>
                 </div>
             }
         </div>

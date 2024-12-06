@@ -1,43 +1,57 @@
-import { useContext, useState } from "react";
-import { ConnectionContext } from "../contexts/connectionContext";
-import axios from "axios";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { FormattedMessage } from "react-intl";
+import { useCookies } from "react-cookie"
+import axios from "axios";
+import { PopUpEchec } from "./popUp.component";
 
-
-
+/**
+ * Gestion de la connection
+ */
 function Connection() {
-    const {authorization, setCompte, setAuthorization } = useContext(ConnectionContext)
     const [nom, setNom] = useState("");
     const [mtp, setMtp] = useState("");
+    const [_, setBiscuit, removeBiscuit] = useCookies(['authorization'])
+
+
     const navigate = useNavigate()
+
+    /**
+     * Appel à l'appel à l'api pour le token
+     */
     function Connecter() {
-        
+
         axios.post("https://projet-dnd.netlify.app/api/generatetoken",
             {
                 persologin: {
                     nom: nom,
-                    classe: mtp
+                    mdp: mtp
                 }
             }
         ).then((response) => {
-            setAuthorization(response.data.token)
-            console.log(authorization)
-            setCompte(nom)
-            navigate("/liste")
+            console.log(response)
+            if (response.data.token != "") {
+                setBiscuit('authorization', response.data.token)
+                navigate("/liste")
 
+            }
+            else{
+                removeBiscuit('authorization')
+            }
 
         }).catch((e) => {
-            console.log(e)
-        })   
+            PopUpEchec("La connection a échoué avec la base de donnée")
+        })
+
     }
 
     return (
-        <div>
-            <label>Nom :</label>
+        <div className="flex flex-col h-full min-h-screen px-16 pt-16 mx-10 bg-slate-800">
+            <label><FormattedMessage id="liste.nom" /> :</label>
             <input onInput={(e) => setNom(e.currentTarget.value)} />
-            <label>Mot de passe :</label>
+            <label><FormattedMessage id="connection.mot_de_passe" /> :</label>
             <input onInput={(e) => setMtp(e.currentTarget.value)} />
-            <button onClick={() => Connecter()}>Connection</button>
+            <button className="mt-5" onClick={() => Connecter()}><FormattedMessage id="connection.connection" /></button>
         </div>
     );
 }

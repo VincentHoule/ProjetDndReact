@@ -13,16 +13,17 @@ import { useContext } from "react"
 import { LangueContext } from "./contexts/langue.context"
 import { Recherche } from "./components/recherche.component"
 import Connection from "./components/formulaireConnection.component"
-import ConnectionProvider from "./contexts/connectionContext"
+import { useCookies } from "react-cookie"
 
 
 function App() {
+  // cookies
   const { local, messages } = useContext(LangueContext)
-
+  const [biscuit, _, removeBiscuit] = useCookies(['authorization'])
+  
   return (
     <IntlProvider locale={local} messages={messages}>
-      <ConnectionProvider>
-        <BrowserRouter>
+      <BrowserRouter>
           <ListeProvider>
             <Routes>
               <Route path="/" element={<TopBar />}>
@@ -34,9 +35,8 @@ function App() {
               </Route>
             </Routes>
           </ListeProvider>
-        </BrowserRouter>
-      </ConnectionProvider>
-    </IntlProvider>
+      </BrowserRouter>
+    </IntlProvider >
 
 
   )

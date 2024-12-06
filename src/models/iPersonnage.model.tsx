@@ -1,4 +1,4 @@
-
+// Interface des armes
 export type IArme = {
     nom: string;
     de: string;
@@ -17,6 +17,7 @@ export type IArme = {
     _id?: string;
   }
 
+  // Interface des personnages
   export type IPersonnage = {
     nom: string;
     classe: string;
@@ -30,6 +31,7 @@ export type IArme = {
     _id?: string;
   }
 
+  // Interface de login
   export type IPersonnageLogin = {
     nom : string,
     mtp : string

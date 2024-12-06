@@ -1,7 +1,10 @@
 
-
+/**
+ * Fonction qui affiche un message de réussite
+ * @param message message de réussite a affiché
+ * @returns Une balise de message de réussite
+ */
 export function PopUpReussite(message : string) {
-    console.log("affiche")
     return (
         <>
         {
@@ -20,8 +23,12 @@ export function PopUpReussite(message : string) {
     );
 }
 
+/**
+ * Fonction qui affiche un message d'erreur
+ * @param message message d'erreur a affiché
+ * @returns Un balise avec unmessage d'erreur
+ */
 export function PopUpEchec(message : string) {
-    console.log("affiche")
     return (
         <>
         {

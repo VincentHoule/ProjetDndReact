@@ -1,41 +1,83 @@
 import axios from "axios";
 import { IPersonnage } from "../models/iPersonnage.model";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, FormattedDate } from "react-intl";
+import { PopUpEchec, PopUpReussite } from "./popUp.component";
+import { useCookies } from "react-cookie";
+import { useState } from "react";
 
 interface IFiche {
     personnage: IPersonnage;
-    key : string
+    key: string
 }
 
 
 
 export default function Personnage(props: IFiche) {
+    const [biscuit, _, removeBiscuit] = useCookies(['authorization'])
+    const [afficheConfirme, setAfficheConfirme] = useState(false)
 
+    /**
+     * Fonction qui demande une confirmation avant la suppression.
+     * @param _id id du personnage a supprimé
+     */
+    function BaliseConfirmation(_id: string) {
+        return (
+            <div className="rounded-lg">
+                <span><FormattedMessage id="liste.supprime_confirme"/></span>
+                <div>
+                    <button onClick={() => { SupprimerPersonnage(_id); setAfficheConfirme(false) }}><FormattedMessage id="liste.oui"/></button>
+                    <button onClick={() => setAfficheConfirme(false)}><FormattedMessage id="liste.non"/></button>
+                </div>
+            </div>
+        );
+    }
 
+    /**
+     * Fonction qui gere la suppression d'un personnage
+     * @param _id _id du personnage a supprimé
+     */
     function SupprimerPersonnage(_id: string) {
         if (_id != '') {
-            axios.delete(`https://projet-dnd.netlify.app/api/personnage/delete/${_id}`).then((response) => {
-                // pop-up confirmation
-            }).catch((e) => {
-                // pop-ip d'erreur
+            axios.delete(`https://projet-dnd.netlify.app/api/personnage/delete/${_id}`, { headers: { Authorization: `Bearer ${biscuit.authorization}` } }).then(() => {
+                PopUpReussite("La suppression a été effectué.")
+            }).catch(() => {
+                PopUpEchec("La suppression a échoué.")
             })
         }
         else {
-            // pop-up d'erreur
+            PopUpEchec("La suppression a échoué.")
         }
 
     }
 
+
     return (
-        <div className='px-2 pt-5 mt-5 border-4 rounded-lg shadow-md border-slate-400 shadow-slate-500 bg-slate-700'>
+        <div className='px-2 pt-5 pb-5 mt-5 mb-5 border-4 rounded-lg shadow-md pb-15 border-slate-400 shadow-slate-500 bg-slate-700'>
+            {afficheConfirme &&
+                (BaliseConfirmation(props.personnage._id ? props.personnage._id : ''))
+            }
             <h1>
                 {props.personnage.nom}
             </h1>
-            <a href={`/modifier/${props.personnage._id}`}><FormattedMessage id="liste.modifier"/></a>
-            <button onClick={() => SupprimerPersonnage(props.personnage._id ? props.personnage._id : '')}>
+            <a href={`/modifier/${props.personnage._id}`}><FormattedMessage id="liste.modifier" /></a>
+            <button className="mx-5" onClick={() => setAfficheConfirme(true)}>
                 <FormattedMessage id="liste.supprimer" />
             </button>
             <div className="flex flex-row gap-2">
+                <div className="flex flex-col gap-2">
+                    <span>Information</span>
+                    <span><FormattedMessage id="liste.classe" />: {props.personnage.classe}</span>
+                    <span><FormattedMessage id="liste.race" />: {props.personnage.race}</span>
+                    <span><FormattedMessage id="liste.niveau" />: {props.personnage.niveau}</span>
+                    <span><FormattedMessage id="form.pv" />: {props.personnage.pv}</span>
+                    <span><FormattedMessage id="form.date_creation" />: <FormattedDate
+                        value={props.personnage.creation}
+                        year="numeric"
+                        month="long"
+                        day="2-digit"
+                    /></span>
+
+                </div>
                 <div className="flex flex-col gap-2">
                     <span className="text-xl"><FormattedMessage id="form.armes" /></span>
                     {props.personnage.armes &&
