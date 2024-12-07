@@ -1,3 +1,27 @@
+
+---- Procedure d'installation ----
+
+Aller dans votre dossier désiré pour contenir le projet
+executer la commande git clone https://github.com/VincentHoule/ProjetDndReact.git
+npm install
+
+
+L'application permet la création de personnage dnd. Les personnages sont modifiable et supprimable.
+Aussi les personnages peuvent être trier par classe et par tranche de niveau.
+
+Utilisateur pour se connecter:
+Nom : Crotus Morus
+mot de passe: 672b7b7b1f452503fb82de89
+* le mtp est l'id des statistique du personnage
+
+---- Attention ----
+L'utilisateur est relié au personnage Crotus Morus. Veuillez à ne pas le supprimer.
+
+---- Conseil ----
+Si la connexion ne fonctionne pas. Appuyez plusieurs fois sur connecter et cela devrait régler le problème de "Opération personnage.find()"
+Liens vers le site en ligne: https://projetdndreact.netlify.app/liste
+Mise en ligne avec netify
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.

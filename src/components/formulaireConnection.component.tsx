@@ -32,7 +32,6 @@ function Connexion() {
                 }
             }
         ).then((response) => {
-            console.log(response)
             if (response.data.token != "") {
                 setBiscuit('authorization', response.data.token)
                 navigate("/liste")
