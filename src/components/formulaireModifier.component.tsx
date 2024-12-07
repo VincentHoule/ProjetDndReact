@@ -6,10 +6,14 @@ import { ListeContext } from "../contexts/listePersonnage.context";
 import { PopUpEchec, PopUpReussite } from "./popUp.component";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useCookies } from "react-cookie";
+import { AfficherChargement } from "./listePersonnage.component";
 
+/**
+ * Gestion de la page modifier
+ */
 function Modifier() {
     const { listePersonnage, setPersonnages } = useContext(ListeContext)
-    const [biscuit, _, removeBiscuit] = useCookies(['authorization'])
+    const [biscuit, _] = useCookies(['authorization'])
 
     const intl = useIntl()
 
@@ -95,9 +99,15 @@ function Modifier() {
         }, 300)
 
     }, [])
+
+    /**
+     * Fonction qui modifier le personnage dans la bd
+     */
     function ModifierPersonnage() {
         setEchec(false)
         setReussite(false)
+
+        // Vérification des champs et affichage des erreurs
         setMessageErreurNom(TraduireMessage(VerifNom(personnageDemo.nom, listePersonnage, "")))
         setMessageErreurClasse(TraduireMessage(VerifClasse(personnageDemo.classe)))
         setMessageErreurRace(TraduireMessage(VerifRace(personnageDemo.race)))
@@ -114,11 +124,12 @@ function Modifier() {
             && messageErreurRace == "" && messageErreurPv == "" && messageErreurArme1 == ""
             && messageErreurArme2 == "" && messageErreurArme3 == "" && messageErreurStats == ""
         ) {
-
-            axios.put("https://projet-dnd.netlify.app/api/personnage/update", { perso: modifiePersonnage }).then(() => {
-                setAffiche(true)
-                setReussite(true)
-            })
+            // Requête de modification
+            axios.put("https://projet-dnd.netlify.app/api/personnage/update", { perso: modifiePersonnage },
+                { headers: { Authorization: `Bearer ${biscuit.authorization}` } }).then(() => {
+                    setAffiche(true)
+                    setReussite(true)
+                })
                 .catch(() => {
                     setEchec(true)
 
@@ -126,51 +137,54 @@ function Modifier() {
         }
         else {
             setEchec(true)
-
         }
-
-
     }
 
+    /**
+     * Morceau de formulaire pour une arme
+     * @param index l'arme dans le tableau
+     * @returns morceau de formulaire
+     */
     const AjouterArme = (index: number) => {
-
         return (
-            <>
-                <div onChange={() => {
 
-                    if (index == 1)
-                        setMessageErreurArme1(TraduireMessage(VerifArme(modifiePersonnage.armes[index])))
-                    if (index == 2)
-                        setMessageErreurArme2(TraduireMessage(VerifArme(modifiePersonnage.armes[index])))
-                    if (index == 3)
-                        setMessageErreurArme3(TraduireMessage(VerifArme(modifiePersonnage.armes[index])))
+            <div onChange={() => {
 
-                }}>
-                    <label><FormattedMessage id="liste.nom" /> :</label>
-                    <input defaultValue={modifiePersonnage.armes[index].nom} onChange={(e) => { personnageDemo.armes[index].nom = e.target.value; setModifiePersonnage(personnageDemo) }}></input>
-                    <label><FormattedMessage id="form.de" /> :</label>
-                    <input defaultValue={modifiePersonnage.armes[index].de} onChange={(e) => { personnageDemo.armes[index].de = e.target.value; setModifiePersonnage(personnageDemo) }}></input>
-                    <label><FormattedMessage id="form.type" /> :</label>
-                    <input defaultValue={modifiePersonnage.armes[index].degat} onChange={(e) => { personnageDemo.armes[index].degat = e.target.value; setModifiePersonnage(personnageDemo) }}></input>
-                    {index == 1 ? BaliseErreur(messageErreurArme1) : null}
-                    {index == 2 ? BaliseErreur(messageErreurArme2) : null}
-                    {index == 3 ? BaliseErreur(messageErreurArme3) : null}
-                </div>
+                // Validation des champs
+                if (index == 1)
+                    setMessageErreurArme1(TraduireMessage(VerifArme(modifiePersonnage.armes[index])))
+                if (index == 2)
+                    setMessageErreurArme2(TraduireMessage(VerifArme(modifiePersonnage.armes[index])))
+                if (index == 3)
+                    setMessageErreurArme3(TraduireMessage(VerifArme(modifiePersonnage.armes[index])))
 
-            </>
+            }}>
+                <label><FormattedMessage id="liste.nom" /> :</label>
+                <input defaultValue={modifiePersonnage.armes[index].nom} onChange={(e) => { personnageDemo.armes[index].nom = e.target.value; setModifiePersonnage(personnageDemo) }}></input>
+                <label><FormattedMessage id="form.de" /> :</label>
+                <input defaultValue={modifiePersonnage.armes[index].de} onChange={(e) => { personnageDemo.armes[index].de = e.target.value; setModifiePersonnage(personnageDemo) }}></input>
+                <label><FormattedMessage id="form.type" /> :</label>
+                <input defaultValue={modifiePersonnage.armes[index].degat} onChange={(e) => { personnageDemo.armes[index].degat = e.target.value; setModifiePersonnage(personnageDemo) }}></input>
+                {/* Affichage des messages d'erreur pour les armes */}
+                {index == 1 && BaliseErreur(messageErreurArme1)}
+                {index == 2 && BaliseErreur(messageErreurArme2)}
+                {index == 3 && BaliseErreur(messageErreurArme3)}
+            </div>
         );
     }
 
+    /**
+     * Fonction qui traduit les messages d'erreur d'un champ
+     * @param messageErreurs tableau des messages d'erreur
+     * @returns les messages traduits
+     */
     function TraduireMessage(messageErreurs: string[]) {
         var message = ""
 
         if (messageErreurs.length != 0) {
-
             (messageErreurs && messageErreurs.map((erreur) => {
                 message += intl.formatMessage({ id: erreur })
             }))
-
-
         }
         return message;
 
@@ -178,9 +192,7 @@ function Modifier() {
 
     if (enChargement) {
         return (
-            <div className="flex flex-col h-full min-h-screen px-32 pt-16 mx-10 bg-slate-800 rounded-tr-3xl">
-                <h1>Chargement ...</h1>
-            </div>
+            AfficherChargement()
         );
     }
     else {
@@ -190,13 +202,13 @@ function Modifier() {
                 {/** Section Message de confirmation */}
                 {affiche && reussite ?
                     <div onClick={() => setReussite(false)}>
-                        {PopUpReussite("Le personnage a été modifier avec success.")}
+                        {PopUpReussite(intl.formatMessage({id: "form.reussit_modif"}))}
                     </div>
 
                     : null}
                 {affiche && echec &&
                     <div onClick={() => setEchec(false)}>
-                        {PopUpEchec("La modification a échoué.")}
+                        {PopUpEchec(intl.formatMessage({id: "form.echec_modif"}))}
                     </div>
                 }
 

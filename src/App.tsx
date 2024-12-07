@@ -13,14 +13,12 @@ import { useContext } from "react"
 import { LangueContext } from "./contexts/langue.context"
 import { Recherche } from "./components/recherche.component"
 import Connection from "./components/formulaireConnection.component"
-import { useCookies } from "react-cookie"
 
 
 function App() {
   // cookies
   const { local, messages } = useContext(LangueContext)
-  const [biscuit, _, removeBiscuit] = useCookies(['authorization'])
-  
+
   return (
     <IntlProvider locale={local} messages={messages}>
       <BrowserRouter>

@@ -1,26 +1,29 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import { useCookies } from "react-cookie"
 import axios from "axios";
 import { PopUpEchec } from "./popUp.component";
+import { BaliseErreur } from "./messageVerification.component";
+
 
 /**
- * Gestion de la connection
+ * Gestion de la connexion
  */
-function Connection() {
+function Connexion() {
     const [nom, setNom] = useState("");
     const [mtp, setMtp] = useState("");
     const [_, setBiscuit, removeBiscuit] = useCookies(['authorization'])
-
-
+    const [messageErreur, setMessageErreur] = useState("")
+    
+    const intl = useIntl()
     const navigate = useNavigate()
 
     /**
      * Appel à l'appel à l'api pour le token
      */
     function Connecter() {
-
+        setMessageErreur("")
         axios.post("https://projet-dnd.netlify.app/api/generatetoken",
             {
                 persologin: {
@@ -37,10 +40,11 @@ function Connection() {
             }
             else{
                 removeBiscuit('authorization')
+                setMessageErreur(intl.formatMessage({id: "connexion.message_erreur"}))
             }
 
-        }).catch((e) => {
-            PopUpEchec("La connection a échoué avec la base de donnée")
+        }).catch(() => {
+            PopUpEchec(intl.formatMessage({id:"connexion.bd_erreur"}))
         })
 
     }
@@ -49,11 +53,12 @@ function Connection() {
         <div className="flex flex-col h-full min-h-screen px-16 pt-16 mx-10 bg-slate-800">
             <label><FormattedMessage id="liste.nom" /> :</label>
             <input onInput={(e) => setNom(e.currentTarget.value)} />
-            <label><FormattedMessage id="connection.mot_de_passe" /> :</label>
+            <label><FormattedMessage id="connexion.mot_de_passe" /> :</label>
             <input onInput={(e) => setMtp(e.currentTarget.value)} />
-            <button className="mt-5" onClick={() => Connecter()}><FormattedMessage id="connection.connection" /></button>
+            {BaliseErreur(messageErreur)}
+            <button className="mt-5" onClick={() => Connecter()}><FormattedMessage id="connexion.connexion" /></button>
         </div>
     );
 }
 
-export default Connection;
+export default Connexion;

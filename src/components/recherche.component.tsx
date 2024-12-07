@@ -9,7 +9,7 @@ import { useCookies } from "react-cookie";
  * Fonction de gestion de recherche
  */
 export function Recherche() {
-    const [biscuit, _, removeBiscuit] = useCookies(['authorization'])
+    const [biscuit, _] = useCookies(['authorization'])
     const [classeChoisie, setClasseChoisie] = useState("Barbare")
     const [min, setMin] = useState(1)
     const [max, setMax] = useState(1)

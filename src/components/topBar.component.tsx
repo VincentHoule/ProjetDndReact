@@ -9,11 +9,9 @@ import { useCookies } from "react-cookie";
  * Gestion de la topBar
  */
 function TopBar() {
-    const { local, setLocal } = useContext(LangueContext)
+    const {local, setLocal } = useContext(LangueContext)
     const [biscuit, _, removeBiscuit] = useCookies(['authorization'])
-    console.log(biscuit.authorization)
     const navigate = useNavigate()
-
     /**
      * Bouton pour changer de langue
      */
@@ -49,7 +47,7 @@ function TopBar() {
                             <FormattedMessage id="topBar.recherche" />
                         </button>
                         <button onClick={() => { removeBiscuit("authorization"); navigate("") }} className="p-3 text-lg text-center text-white transition-all rounded-none bg-slate-800 hover:bg-slate-500 rounded-t-2xl hover:text-slate-200">
-                            <FormattedMessage id="topBar.deconnection" />
+                            <FormattedMessage id="topBar.deconnexion" />
                         </button>
                     </>}
                 {GererLangue()}

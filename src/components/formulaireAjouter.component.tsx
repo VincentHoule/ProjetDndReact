@@ -9,7 +9,7 @@ function Ajouter() {
     const { listePersonnage, setPersonnages } = useContext(ListeContext)
 
     // cookies
-    const [biscuit, _, removeBiscuit] = useCookies(['authorization'])
+    const [biscuit, _] = useCookies(['authorization'])
 
     // traduction pour les messages d'erreur
     const intl = useIntl()
@@ -88,8 +88,6 @@ function Ajouter() {
             (messageErreurs && messageErreurs.map((erreur) => {
                 message += intl.formatMessage({ id: erreur })
             }))
-
-
         }
         return message;
 
@@ -122,7 +120,8 @@ function Ajouter() {
             && messageErreurArme2 == "" && messageErreurArme3 == "" && messageErreurStats == ""
         ) {
             // Ajouter un personnage
-            axios.post("https://projet-dnd.netlify.app/api/personnage/add", { perso: personnageDemo }).then(() => {
+            axios.post("https://projet-dnd.netlify.app/api/personnage/add", { perso: personnageDemo }, 
+                { headers: { Authorization: `Bearer ${biscuit.authorization}` } }).then(() => {
                 setReussite(true)
             })
                 .catch((e) => {
@@ -178,13 +177,13 @@ function Ajouter() {
            {/** Section Message de confirmation */}
             {reussite &&
                 <div onClick={() => setReussite(false)}>
-                    {PopUpReussite("Le personnage a été ajouté avec success.")}
+                    {PopUpReussite(intl.formatMessage({id: "form.reussit_ajout"}))}
                 </div>
             }
 
             {echec &&
                 <div onClick={() => setEchec(false)}>
-                    {PopUpEchec("La création a échoué.")}
+                    {PopUpEchec(intl.formatMessage({id: "form.echec_ajout"}))}
                 </div>
             }
 
